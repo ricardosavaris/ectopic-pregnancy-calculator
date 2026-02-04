@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ectopic Pregnancy Probability Calculator</title>
+    <style>
+        :root {
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-charcoal-700: rgba(31, 33, 33, 1);
+            --color-charcoal-800: rgba(38, 40, 40, 1);
+            --color-teal-300: rgba(50, 184, 198, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-teal-700: rgba(26, 104, 115, 1);
+            --color-red-400: rgba(255, 84, 89, 1);
+            --color-orange-400: rgba(230, 129, 97, 1);
+            --color-brown-600-rgb: 94, 82, 64;
+            --color-teal-500-rgb: 33, 128, 141;
+            --color-slate-900-rgb: 19, 52, 59;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--color-cream-50);
+            color: var(--color-charcoal-700);
+            line-height: 1.6;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: var(--color-charcoal-700);
+                color: var(--color-cream-100);
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--color-teal-600);
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: var(--color-slate-500);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: var(--color-cream-100);
+            border: 1px solid rgba(var(--color-brown-600-rgb), 0.15);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .card {
+                background: var(--color-charcoal-800);
+                border-color: rgba(var(--color-gray-300), 0.2);
+            }
+        }
+
+        .consultation-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid rgba(var(--color-brown-600-rgb), 0.1);
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--color-slate-500);
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: var(--color-teal-600);
+            border-bottom-color: var(--color-teal-600);
+        }
+
+        .tab-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .consultation-panel {
+            display: none;
+        }
+
+        .consultation-panel.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--color-charcoal-700);
+            font-size: 0.95rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            label {
+                color: var(--color-cream-100);
+            }
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(var(--color-brown-600-rgb), 0.3);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            color: var(--color-charcoal-700);
+            box-sizing: border-box;
+        }
+
+        select:focus, input:focus {
+            outline: 2px solid var(--color-teal-500);
+            border-color: var(--color-teal-500);
+        }
+
+        .help-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: var(--color-teal-500);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: help;
+            margin-left: 6px;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: var(--color-slate-500);
+            background: rgba(var(--color-teal-500-rgb), 0.08);
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            border-left: 3px solid var(--color-teal-500);
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, rgba(var(--color-teal-500-rgb), 0.1), rgba(var(--color-teal-500-rgb), 0.05));
+            border: 2px solid var(--color-teal-500);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .result-box.high-risk {
+            background: linear-gradient(135deg, rgba(255, 84, 89, 0.1), rgba(255, 84, 89, 0.05));
+            border-color: var(--color-red-400);
+        }
+
+        .result-box.moderate-risk {
+            background: linear-gradient(135deg, rgba(230, 129, 97, 0.1), rgba(230, 129, 97, 0.05));
+            border-color: var(--color-orange-400);
+        }
+
+        .probability-value {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--color-teal-600);
+            margin: 10px 0;
+        }
+
+        .result-box.high-risk .probability-value {
+            color: var(--color-red-400);
+        }
+
+        .result-box.moderate-risk .probability-value {
+            color: var(--color-orange-400);
+        }
+
+        .management-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 15px;
+            color: var(--color-charcoal-700);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .management-text {
+                color: var(--color-cream-100);
+            }
+        }
+
+        .btn {
+            padding: 14px 28px;
+            background: var(--color-teal-500);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            background: var(--color-teal-600);
+        }
+
+        .btn:active {
+            background: var(--color-teal-700);
+        }
+
+        .btn-secondary {
+            background: rgba(var(--color-brown-600-rgb), 0.12);
+            color: var(--color-charcoal-700);
+            margin-left: 10px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .btn-secondary {
+                background: rgba(var(--color-gray-300), 0.15);
+                color: var(--color-cream-100);
+            }
+        }
+
+        .btn-secondary:hover {
+            background: rgba(var(--color-brown-600-rgb), 0.2);
+        }
+
+        .info-section {
+            background: rgba(var(--color-teal-500-rgb), 0.05);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .reference {
+            font-size: 0.8rem;
+            color: var(--color-slate-500);
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(var(--color-brown-600-rgb), 0.15);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .consultation-summary {
+            background: rgba(var(--color-teal-500-rgb), 0.08);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ectopic Pregnancy Probability Calculator</h1>
+        <p class="subtitle">Bayesian algorithm for diagnosing ectopic pregnancy using clinical, ultrasound, and hCG data</p>
+
+        <div class="info-section">
+            <strong>Instructions:</strong> Complete each consultation in sequence. Based on the probability result, the app will guide you on whether to proceed with management or schedule the next consultation. This calculator uses Bayes theorem with likelihood ratios from validated clinical data.
+        </div>
+
+        <div class="consultation-tabs">
+            <button class="tab-btn active" onclick="showConsultation(1)" id="tab1">1st Consultation</button>
+            <button class="tab-btn" onclick="showConsultation(2)" id="tab2" disabled>2nd Consultation</button>
+            <button class="tab-btn" onclick="showConsultation(3)" id="tab3" disabled>3rd Consultation</button>
+        </div>
+
+        <!-- 1st Consultation -->
+        <div class="consultation-panel active" id="consultation1">
+            <div class="card">
+                <h2>First Consultation</h2>
+                
+                <div class="form-group">
+                    <label>
+                        Signs and Symptoms
+                        <span class="help-icon" title="Clinical presentation at first visit">?</span>
+                    </label>
+                    <select id="symptoms1">
+                        <option value="">Select symptoms...</option>
+                        <option value="asymptomatic">Asymptomatic</option>
+                        <option value="pain">Pain (any degree)</option>
+                        <option value="bleeding">Bleeding (any presence)</option>
+                        <option value="pain_bleeding">Pain + Bleeding</option>
+                    </select>
+                    <div class="help-text">
+                        Select the clinical presentation. Pain or bleeding of any degree/amount is considered positive.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Risk Factors
+                        <span class="help-icon" title="History of risk factors for ectopic pregnancy">?</span>
+                    </label>
+                    <select id="riskfactor1">
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                    <div class="help-text">
+                        Risk factors include: previous ectopic pregnancy, previous tubal surgery, history of pelvic inflammatory disease, or infertility.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Transvaginal Ultrasound Findings
+                        <span class="help-icon" title="TVUS findings at first consultation">?</span>
+                    </label>
+                    <select id="ultrasound1">
+                        <option value="">Select findings...</option>
+                        <option value="normal">Normal (no abnormal findings)</option>
+                        <option value="free_fluid">Free fluid (any amount)</option>
+                        <option value="adnexal_mass">Adnexal mass (extraovarian)</option>
+                        <option value="free_fluid_mass">Free fluid + Adnexal mass</option>
+                        <option value="iup">Intrauterine pregnancy</option>
+                        <option value="fetal_heartbeat">Extrauterine fetal heartbeat</option>
+                        <option value="gestational_sac">Extrauterine gestational sac</option>
+                    </select>
+                    <div class="help-text">
+                        Definitive findings (IUP, extrauterine fetal heartbeat, or gestational sac) will provide immediate diagnosis.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        hCG Level (mIU/mL)
+                        <span class="help-icon" title="Serum human chorionic gonadotropin level">?</span>
+                    </label>
+                    <input type="number" id="hcg1" placeholder="Enter hCG value" min="0">
+                    <div class="help-text">
+                        The discriminatory zone is 2000 mIU/mL. hCG should be measured using the same kit for all consultations.
+                    </div>
+                </div>
+
+                <button class="btn" onclick="calculateConsultation1()">Calculate Probability</button>
+                <button class="btn btn-secondary" onclick="resetCalculator()">Reset</button>
+
+                <div id="result1" class="hidden"></div>
+            </div>
+        </div>
+
+        <!-- 2nd Consultation -->
+        <div class="consultation-panel" id="consultation2">
+            <div class="card">
+                <h2>Second Consultation (48-72 hours later)</h2>
+                
+                <div class="consultation-summary" id="summary2"></div>
+
+                <div class="form-group">
+                    <label>Signs and Symptoms</label>
+                    <select id="symptoms2">
+                        <option value="">Select symptoms...</option>
+                        <option value="asymptomatic">Asymptomatic</option>
+                        <option value="pain">Pain</option>
+                        <option value="bleeding">Bleeding</option>
+                        <option value="pain_bleeding">Pain + Bleeding</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Risk Factors</label>
+                    <select id="riskfactor2">
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Transvaginal Ultrasound Findings</label>
+                    <select id="ultrasound2">
+                        <option value="">Select findings...</option>
+                        <option value="normal">Normal</option>
+                        <option value="free_fluid">Free fluid</option>
+                        <option value="adnexal_mass">Adnexal mass</option>
+                        <option value="free_fluid_mass">Free fluid + Adnexal mass</option>
+                        <option value="iup">Intrauterine pregnancy</option>
+                        <option value="fetal_heartbeat">Extrauterine fetal heartbeat</option>
+                        <option value="gestational_sac">Extrauterine gestational sac</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        hCG Level (mIU/mL)
+                        <span class="help-icon" title="Use same hCG kit as first consultation">?</span>
+                    </label>
+                    <input type="number" id="hcg2" placeholder="Enter hCG value" min="0">
+                </div>
+
+                <button class="btn" onclick="calculateConsultation2()">Calculate Probability</button>
+
+                <div id="result2" class="hidden"></div>
+            </div>
+        </div>
+
+        <!-- 3rd Consultation -->
+        <div class="consultation-panel" id="consultation3">
+            <div class="card">
+                <h2>Third Consultation (48-72 hours later)</h2>
+                
+                <div class="consultation-summary" id="summary3"></div>
+
+                <div class="form-group">
+                    <label>Signs and Symptoms</label>
+                    <select id="symptoms3">
+                        <option value="">Select symptoms...</option>
+                        <option value="asymptomatic">Asymptomatic</option>
+                        <option value="pain">Pain</option>
+                        <option value="bleeding">Bleeding</option>
+                        <option value="pain_bleeding">Pain + Bleeding</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Risk Factors</label>
+                    <select id="riskfactor3">
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Transvaginal Ultrasound Findings</label>
+                    <select id="ultrasound3">
+                        <option value="">Select findings...</option>
+                        <option value="normal">Normal</option>
+                        <option value="free_fluid">Free fluid</option>
+                        <option value="adnexal_mass">Adnexal mass</option>
+                        <option value="free_fluid_mass">Free fluid + Adnexal mass</option>
+                        <option value="iup">Intrauterine pregnancy</option>
+                        <option value="fetal_heartbeat">Extrauterine fetal heartbeat</option>
+                        <option value="gestational_sac">Extrauterine gestational sac</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>hCG Level (mIU/mL)</label>
+                    <input type="number" id="hcg3" placeholder="Enter hCG value" min="0">
+                </div>
+
+                <button class="btn" onclick="calculateConsultation3()">Calculate Probability</button>
+
+                <div id="result3" class="hidden"></div>
+            </div>
+        </div>
+
+        <div class="reference">
+            <strong>Reference:</strong> Link CA, Maissiat J, Mol BW, Barnhart KT, Savaris RF. Diagnosing ectopic pregnancy using Bayes theorem: a retrospective cohort study. Fertil Steril. 2023;119(1):78-86. doi:10.1016/j.fertnstert.2022.09.016
+            <br><br>
+            <strong>Disclaimer:</strong> This calculator is for educational and clinical decision support purposes. Clinical judgment should always be exercised. Results should be interpreted in the context of the complete clinical picture.
+        </div>
+    </div>
+
+    <script>
+        // Store consultation data
+        let consultationData = {
+            consultation1: {},
+            consultation2: {},
+            consultation3: {},
+            posttest1: null,
+            posttest2: null
+        };
+
+        // Pre-test probabilities based on symptoms and risk factors
+        const pretestProb = {
+            asymptomatic: { no: 0.017, yes: 0.05 },
+            pain: { no: 0.13, yes: 0.40 },
+            bleeding: { no: 0.03, yes: 0.08 },
+            pain_bleeding: { no: 0.15, yes: 0.46 }
+        };
+
+        // Likelihood ratios for ultrasound findings
+        const ultrasoundLR = {
+            normal: 0.07,
+            free_fluid: 2.4,
+            adnexal_mass: 38,
+            free_fluid_mass: 47
+        };
+
+        // Likelihood ratios for hCG threshold combined with ultrasound
+        const hcgLR = {
+            normal: { below: 1, above: 1 },
+            free_fluid: { below: 1.8, above: 2.1 },
+            adnexal_mass: { below: 13, above: 45 },
+            free_fluid_mass: { below: 17, above: 55 }
+        };
+
+        // Likelihood ratios for hCG variation
+        const hcgVariationLR = {
+            reduction_1_35: 16.6,
+            reduction_35_50: 0.8,
+            reduction_gt_50: 0,
+            any_rise: 3.3,
+            na: 1
+        };
+
+        function showConsultation(num) {
+            // Hide all panels
+            document.querySelectorAll('.consultation-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected panel
+            document.getElementById(`consultation${num}`).classList.add('active');
+            document.getElementById(`tab${num}`).classList.add('active');
+        }
+
+        function calculatePretestOdds(probability) {
+            return probability / (1 - probability);
+        }
+
+        function calculatePosttestProbability(odds) {
+            return odds / (1 + odds);
+        }
+
+        function getHCGVariation(hcg1, hcg2) {
+            const change = ((hcg2 - hcg1) / hcg1) * 100;
+            
+            if (change > 0) return 'any_rise';
+            if (change >= -35) return 'reduction_1_35';
+            if (change >= -50) return 'reduction_35_50';
+            return 'reduction_gt_50';
+        }
+
+        function calculateConsultation1() {
+            const symptoms = document.getElementById('symptoms1').value;
+            const riskFactor = document.getElementById('riskfactor1').value;
+            const ultrasound = document.getElementById('ultrasound1').value;
+            const hcg = parseFloat(document.getElementById('hcg1').value);
+
+            if (!symptoms || !ultrasound || isNaN(hcg)) {
+                alert('Please complete all fields');
+                return;
+            }
+
+            // Check for definitive diagnosis
+            if (ultrasound === 'iup') {
+                displayResult(1, 0, 'Intrauterine pregnancy confirmed. No ectopic pregnancy.');
+                return;
+            }
+            if (ultrasound === 'fetal_heartbeat' || ultrasound === 'gestational_sac') {
+                displayResult(1, 100, 'Ectopic pregnancy confirmed by ultrasound findings.');
+                return;
+            }
+
+            // Calculate pretest probability
+            const pretestProbability = pretestProb[symptoms][riskFactor];
+            let pretestOdds = calculatePretestOdds(pretestProbability);
+
+            // Apply ultrasound LR
+            const usLR = ultrasoundLR[ultrasound];
+            let posttestOdds = pretestOdds * usLR;
+
+            // Apply hCG threshold LR
+            const hcgThreshold = hcg < 2000 ? 'below' : 'above';
+            const hcgThresholdLR = hcgLR[ultrasound][hcgThreshold];
+            posttestOdds = posttestOdds * hcgThresholdLR;
+
+            // Calculate posttest probability
+            const posttestProbability = calculatePosttestProbability(posttestOdds);
+            const posttestPercent = (posttestProbability * 100).toFixed(1);
+
+            // Store data
+            consultationData.consultation1 = {
+                symptoms, riskFactor, ultrasound, hcg, 
+                pretestProbability, posttestProbability
+            };
+            consultationData.posttest1 = posttestProbability;
+
+            displayResult(1, posttestPercent);
+        }
+
+        function calculateConsultation2() {
+            const symptoms = document.getElementById('symptoms2').value;
+            const riskFactor = document.getElementById('riskfactor2').value;
+            const ultrasound = document.getElementById('ultrasound2').value;
+            const hcg = parseFloat(document.getElementById('hcg2').value);
+
+            if (!symptoms || !ultrasound || isNaN(hcg)) {
+                alert('Please complete all fields');
+                return;
+            }
+
+            // Check for definitive diagnosis
+            if (ultrasound === 'iup') {
+                displayResult(2, 0, 'Intrauterine pregnancy confirmed. No ectopic pregnancy.');
+                return;
+            }
+            if (ultrasound === 'fetal_heartbeat' || ultrasound === 'gestational_sac') {
+                displayResult(2, 100, 'Ectopic pregnancy confirmed by ultrasound findings.');
+                return;
+            }
+
+            // Calculate adjusted pretest probability
+            const rawPretest = pretestProb[symptoms][riskFactor];
+            const adjustedPretest = (1 - consultationData.posttest1) * rawPretest / 
+                                   ((1 - consultationData.posttest1) * rawPretest + consultationData.posttest1 * (1 - rawPretest));
+            
+            let pretestOdds = calculatePretestOdds(adjustedPretest);
+
+            // Apply ultrasound LR
+            const usLR = ultrasoundLR[ultrasound];
+            let posttestOdds = pretestOdds * usLR;
+
+            // Apply hCG threshold LR
+            const hcgThreshold = hcg < 2000 ? 'below' : 'above';
+            const hcgThresholdLR = hcgLR[ultrasound][hcgThreshold];
+            posttestOdds = posttestOdds * hcgThresholdLR;
+
+            // Apply hCG variation LR
+            const hcg1 = consultationData.consultation1.hcg;
+            const variation = getHCGVariation(hcg1, hcg);
+            const variationLR = hcgVariationLR[variation];
+            posttestOdds = posttestOdds * variationLR;
+
+            // Calculate posttest probability
+            const posttestProbability = calculatePosttestProbability(posttestOdds);
+            const posttestPercent = (posttestProbability * 100).toFixed(1);
+
+            // Store data
+            consultationData.consultation2 = {
+                symptoms, riskFactor, ultrasound, hcg, 
+                adjustedPretest, posttestProbability, variation
+            };
+            consultationData.posttest2 = posttestProbability;
+
+            displayResult(2, posttestPercent);
+        }
+
+        function calculateConsultation3() {
+            const symptoms = document.getElementById('symptoms3').value;
+            const riskFactor = document.getElementById('riskfactor3').value;
+            const ultrasound = document.getElementById('ultrasound3').value;
+            const hcg = parseFloat(document.getElementById('hcg3').value);
+
+            if (!symptoms || !ultrasound || isNaN(hcg)) {
+                alert('Please complete all fields');
+                return;
+            }
+
+            // Check for definitive diagnosis
+            if (ultrasound === 'iup') {
+                displayResult(3, 0, 'Intrauterine pregnancy confirmed. No ectopic pregnancy.');
+                return;
+            }
+            if (ultrasound === 'fetal_heartbeat' || ultrasound === 'gestational_sac') {
+                displayResult(3, 100, 'Ectopic pregnancy confirmed by ultrasound findings.');
+                return;
+            }
+
+            // Calculate adjusted pretest probability
+            const rawPretest = pretestProb[symptoms][riskFactor];
+            const adjustedPretest = (1 - consultationData.posttest2) * rawPretest / 
+                                   ((1 - consultationData.posttest2) * rawPretest + consultationData.posttest2 * (1 - rawPretest));
+            
+            let pretestOdds = calculatePretestOdds(adjustedPretest);
+
+            // Apply ultrasound LR
+            const usLR = ultrasoundLR[ultrasound];
+            let posttestOdds = pretestOdds * usLR;
+
+            // Apply hCG threshold LR
+            const hcgThreshold = hcg < 2000 ? 'below' : 'above';
+            const hcgThresholdLR = hcgLR[ultrasound][hcgThreshold];
+            posttestOdds = posttestOdds * hcgThresholdLR;
+
+            // Apply hCG variation LR (from first consultation)
+            const hcg1 = consultationData.consultation1.hcg;
+            const variation = getHCGVariation(hcg1, hcg);
+            const variationLR = hcgVariationLR[variation];
+            posttestOdds = posttestOdds * variationLR;
+
+            // Calculate posttest probability
+            const posttestProbability = calculatePosttestProbability(posttestOdds);
+            const posttestPercent = (posttestProbability * 100).toFixed(1);
+
+            displayResult(3, posttestPercent);
+        }
+
+        function displayResult(consultation, probability, customMessage = null) {
+            const resultDiv = document.getElementById(`result${consultation}`);
+            resultDiv.classList.remove('hidden');
+
+            let riskClass = '';
+            let management = '';
+
+            if (customMessage) {
+                resultDiv.innerHTML = `
+                    <div class="result-box">
+                        <div style="font-size: 1.2rem; font-weight: 600;">${customMessage}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const prob = parseFloat(probability);
+
+            if (prob >= 95) {
+                riskClass = 'high-risk';
+                management = 'High probability of ectopic pregnancy. Consider immediate intervention (surgery or medical management with methotrexate based on clinical criteria).';
+            } else if (prob <= 1) {
+                riskClass = '';
+                management = 'Ectopic pregnancy effectively ruled out. Follow standard obstetric care.';
+            } else {
+                riskClass = 'moderate-risk';
+                management = 'Inconclusive result. Schedule follow-up consultation in 48-72 hours with repeat TVUS and hCG measurement.';
+                
+                // Enable next consultation tab
+                if (consultation < 3) {
+                    document.getElementById(`tab${consultation + 1}`).disabled = false;
+                    updateSummary(consultation + 1);
+                }
+            }
+
+            resultDiv.innerHTML = `
+                <div class="result-box ${riskClass}">
+                    <div style="font-size: 1.1rem; font-weight: 600;">Probability of Ectopic Pregnancy</div>
+                    <div class="probability-value">${probability}%</div>
+                    <div class="management-text">Management Recommendation:</div>
+                    <div style="margin-top: 10px;">${management}</div>
+                </div>
+            `;
+
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function updateSummary(consultation) {
+            const summaryDiv = document.getElementById(`summary${consultation}`);
+            const prevConsultation = consultation - 1;
+            const data = consultationData[`consultation${prevConsultation}`];
+            const prob = (consultationData[`posttest${prevConsultation}`] * 100).toFixed(1);
+
+            summaryDiv.innerHTML = `
+                <strong>Previous consultation result:</strong> ${prob}% probability of ectopic pregnancy<br>
+                <strong>Previous hCG:</strong> ${data.hcg} mIU/mL
+            `;
+        }
+
+        function resetCalculator() {
+            if (confirm('Reset all data and start over?')) {
+                consultationData = {
+                    consultation1: {},
+                    consultation2: {},
+                    consultation3: {},
+                    posttest1: null,
+                    posttest2: null
+                };
+
+                // Clear all inputs
+                ['symptoms', 'riskfactor', 'ultrasound', 'hcg'].forEach(field => {
+                    [1, 2, 3].forEach(num => {
+                        const elem = document.getElementById(`${field}${num}`);
+                        if (elem) {
+                            elem.value = '';
+                        }
+                    });
+                });
+
+                // Hide all results
+                [1, 2, 3].forEach(num => {
+                    document.getElementById(`result${num}`).classList.add('hidden');
+                });
+
+                // Disable tabs 2 and 3
+                document.getElementById('tab2').disabled = true;
+                document.getElementById('tab3').disabled = true;
+
+                // Show first consultation
+                showConsultation(1);
+            }
+        }
+    </script>
+</body>
+</html>
